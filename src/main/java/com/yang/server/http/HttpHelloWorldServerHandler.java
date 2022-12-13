@@ -24,9 +24,8 @@ import io.netty.handler.codec.http.*;
 import io.netty.util.AsciiString;
 import org.apache.commons.io.IOUtils;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static io.netty.handler.codec.http.HttpHeaderNames.*;
 import static io.netty.handler.codec.http.HttpHeaderValues.KEEP_ALIVE;
@@ -44,14 +43,8 @@ public class HttpHelloWorldServerHandler extends SimpleChannelInboundHandler<Htt
         if (msg instanceof HttpRequest) {
             HttpRequest req = (HttpRequest) msg;
             boolean keepAlive = HttpUtil.isKeepAlive(req);
-
-            FileInputStream fileInputStream;
-            try {
-                fileInputStream = new FileInputStream("src/main/resources/site" + req.uri());
-            } catch (FileNotFoundException exception) {
-                fileInputStream = new FileInputStream("src/main/resources/site/Error.html");
-            }
-            byte[] b = IOUtils.toByteArray(fileInputStream);
+            InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(("site" + req.uri()));;
+            byte[] b = IOUtils.toByteArray(inputStream);
             FullHttpResponse response = new DefaultFullHttpResponse(req.protocolVersion(), OK, Unpooled.wrappedBuffer(b));
             AsciiString contentType = TEXT_HTML;
             if (req.uri().toUpperCase().endsWith("CSS")) {
